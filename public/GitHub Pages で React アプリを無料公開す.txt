@@ -1,0 +1,167 @@
+了解だよ、剛さん。  
+あなたが作った **React + TypeScript + D3.js の可視化ツールを GitHub Pages で無料公開するための手順**を、  
+**最短・確実・実務レベル**でまとめて案内するね。
+
+これをそのまま実行すれば、  
+**https://<ユーザー名>.github.io/<リポジトリ名>/**  
+で公開できるようになる。
+
+---
+
+# ✅ **GitHub Pages で React アプリを無料公開する手順（完全版）**
+
+---
+
+# ✅ 1. GitHub にリポジトリを作成
+1. GitHub にログイン  
+2. 「New repository」  
+3. リポジトリ名を入力（例：system-visualizer）  
+4. Public を選択  
+5. Create repository
+
+---
+
+# ✅ 2. プロジェクトを GitHub に push
+
+プロジェクトフォルダで：
+
+```
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/<ユーザー名>/<リポジトリ名>.git
+git push -u origin main
+```
+
+---
+
+# ✅ 3. GitHub Pages 用の設定を追加
+
+### ✅ gh-pages をインストール
+
+```
+npm install gh-pages --save-dev
+```
+
+---
+
+# ✅ 4. package.json を編集
+
+### ✅ ① homepage を追加
+
+```json
+"homepage": "https://<ユーザー名>.github.io/<リポジトリ名>/",
+```
+
+### ✅ ② scripts に deploy 用コマンドを追加
+
+```json
+"scripts": {
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d dist",
+  "build": "vite build",
+  "dev": "vite"
+}
+```
+
+※ create-react-app の場合は `-d build` にする  
+（剛さんは Vite なので `dist` のままでOK）
+
+---
+
+# ✅ 5. JSON のパスを修正（重要）
+
+GitHub Pages はルートが変わるので、  
+`/interfaces.json` だと読み込めなくなる。
+
+✅ 修正：
+
+```ts
+const response = await fetch("./interfaces.json");
+```
+
+これでどの環境でも動く。
+
+---
+
+# ✅ 6. デプロイ実行
+
+```
+npm run deploy
+```
+
+これで自動的に：
+
+- build（dist）を生成  
+- gh-pages ブランチに push  
+- GitHub Pages が公開  
+
+まで全部やってくれる。
+
+---
+
+# ✅ 7. 公開 URL を確認
+
+GitHub のリポジトリ → Settings → Pages
+
+✅ URL が表示される：
+
+```
+https://<ユーザー名>.github.io/<リポジトリ名>/
+```
+
+これで公開完了。
+
+---
+
+# ✅ 8. 公開後の更新方法（超簡単）
+
+コードを修正したら：
+
+```
+git add .
+git commit -m "update"
+git push
+npm run deploy
+```
+
+これだけで更新される。
+
+---
+
+# ✅ 9. よくあるハマりポイント（剛さん向けに最適化）
+
+### ✅ ① JSON が読み込めない  
+→ `/interfaces.json` を `./interfaces.json` に変更
+
+### ✅ ② 画面が真っ白  
+→ homepage の URL が間違っている  
+（最後に `/` を忘れない）
+
+### ✅ ③ D3 のパスがずれる  
+→ SVG や JSON のパスは相対パスに統一
+
+---
+
+# ✅ まとめ：剛さんのプロジェクトは GitHub Pages と相性抜群
+
+- 静的ファイルだけで動く  
+- JSON もそのまま配信できる  
+- React + Vite でも問題なし  
+- デプロイは `npm run deploy` だけ  
+- 完全無料で公開できる  
+
+剛さんの可視化ツールは、  
+GitHub Pages で公開するのが一番スマートだよ。
+
+---
+
+必要なら：
+
+✅ GitHub Pages 用の最適化済み package.json  
+✅ deploy エラーの解決  
+✅ 公開後の URL チェック  
+✅ README.md のテンプレート  
+
+どれでも作るよ。
