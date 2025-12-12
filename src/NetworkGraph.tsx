@@ -28,9 +28,12 @@ const NetworkGraph: React.FC = () => {
   const [targetSystem, setTargetSystem] = useState<string>("");
   const [protocolFilter, setProtocolFilter] = useState<string>("");
 
+  // ✅ ノードクリックで詳細表示
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+
   const loadData = async () => {
     try {
-      const response = await fetch("/interfaces.json");
+      const response = await fetch("./interfaces.json");
       const data: InterfaceData[] = await response.json();
       setInterfaces(data);
     } catch (error) {
@@ -75,7 +78,6 @@ const NetworkGraph: React.FC = () => {
     const svg = d3.select("#graph");
     svg.selectAll("*").remove();
 
-    // ✅ ターゲット数に応じて SVG の横幅を自動調整
     const targets = Array.from(new Set(filteredInterfaces.map(i => i.target)));
     const svgWidth = Math.max(1200, 400 + targets.length * 250);
     const svgHeight = 800;
@@ -117,12 +119,19 @@ const NetworkGraph: React.FC = () => {
       .attr("stroke-width", d => protocolStyle(d.protocol).width)
       .attr("stroke-dasharray", d => protocolStyle(d.protocol).dash || null);
 
+    // ✅ ノードを角丸四角に変更
     const node = svg.append("g")
-      .selectAll("circle")
+      .selectAll("rect")
       .data(nodes)
-      .enter().append("circle")
-      .attr("r", 30)
+      .enter().append("rect")
+      .attr("width", 120)
+      .attr("height", 50)
+      .attr("rx", 12)
+      .attr("ry", 12)
       .attr("fill", "lightgray")
+      .attr("x", d => d.x - 60)
+      .attr("y", d => d.y - 25)
+      .on("click", (event, d) => setSelectedNode(d)) // ✅ クリックイベント
       .call(
         (d3.drag() as any)
           .on("start", dragStarted as any)
@@ -130,35 +139,32 @@ const NetworkGraph: React.FC = () => {
           .on("end", dragEnded as any)
       );
 
+    // ✅ ラベルの文字サイズUP
     const label = svg.append("g")
       .selectAll("text")
       .data(nodes)
       .enter().append("text")
       .text(d => d.name)
-      .attr("font-size", 14)
-      .attr("dy", -40);
+      .attr("font-size", 18)
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "middle")
+      .attr("x", d => d.x)
+      .attr("y", d => d.y - 35);
 
     function ticked() {
-      node.attr("cx", d => (d as any).x).attr("cy", d => (d as any).y);
-      label.attr("x", d => (d as any).x).attr("y", d => (d as any).y);
+      node
+        .attr("x", d => d.x - 60)
+        .attr("y", d => d.y - 25);
+
+      label
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 35);
 
       link
-        .attr("x1", d => {
-          const src = nodes.find(n => n.id === (d as InterfaceData).source);
-          return src ? (src as any).x : 0;
-        })
-        .attr("y1", d => {
-          const src = nodes.find(n => n.id === (d as InterfaceData).source);
-          return src ? (src as any).y : 0;
-        })
-        .attr("x2", d => {
-          const tgt = nodes.find(n => n.id === (d as InterfaceData).target);
-          return tgt ? (tgt as any).x : 0;
-        })
-        .attr("y2", d => {
-          const tgt = nodes.find(n => n.id === (d as InterfaceData).target);
-          return tgt ? (tgt as any).y : 0;
-        });
+        .attr("x1", d => nodes.find(n => n.id === d.source)?.x || 0)
+        .attr("y1", d => nodes.find(n => n.id === d.source)?.y || 0)
+        .attr("x2", d => nodes.find(n => n.id === d.target)?.x || 0)
+        .attr("y2", d => nodes.find(n => n.id === d.target)?.y || 0);
     }
 
     function dragStarted(event: any, d: any) {
@@ -183,8 +189,8 @@ const NetworkGraph: React.FC = () => {
   return (
     <div>
 
-      {/* ✅ プルダウン */}
-      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+      {/* ✅ プルダウン（左側のまま少し右に寄せる） */}
+      <div style={{ display: "flex", gap: "20px", marginBottom: "20px", marginLeft: "40px" }}>
         <div>
           <label>Source: </label>
           <select translate="no" value={sourceSystem} onChange={e => setSourceSystem(e.target.value)}>
@@ -228,6 +234,27 @@ const NetworkGraph: React.FC = () => {
       >
         <svg id="graph"></svg>
       </div>
+
+      {/* ✅ ノード詳細パネル */}
+      {selectedNode && (
+        <div
+          style={{
+            position: "fixed",
+            right: "20px",
+            top: "120px",
+            width: "260px",
+            background: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "12px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
+          }}
+        >
+          <h3>{selectedNode.name}</h3>
+          <p>ID: {selectedNode.id}</p>
+          <p>位置: ({Math.round(selectedNode.x)}, {Math.round(selectedNode.y)})</p>
+        </div>
+      )}
 
       {/* ✅ テーブル */}
       <div translate="no" style={{ border: "1px solid #ccc", padding: "10px", maxHeight: "300px", overflowY: "scroll" }}>
