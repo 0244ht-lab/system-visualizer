@@ -2,7 +2,7 @@
   "name": "system-visualizer",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://0244ht-lab.github.io/system-visualizer/",
+  "homepage": "https://0244ht-lab.github.io/system-visualizer",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
